@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CludenateF – Chat</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="chat-page">
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-small">⚡ CludenateF</div>
+    <button class="close-sidebar" onclick="toggleSidebar()">✕</button>
+  </div>
+  <button class="new-chat-btn" onclick="newChat()">+ Chat Baru</button>
+  <div class="chat-history-list" id="chat-history-list"></div>
+  <div class="sidebar-footer">
+    <div class="user-info" id="sidebar-user-info"></div>
+    <div class="sidebar-actions">
+      <button onclick="openSettings()" title="Pengaturan">⚙️ Pengaturan</button>
+      <button onclick="doLogout()" title="Logout">🚪 Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- MAIN -->
+<div class="chat-main" id="chat-main">
+  <div class="chat-topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="topbar-title">⚡ CludenateF</div>
+    <div class="topbar-right" id="topbar-user"></div>
+  </div>
+
+  <div class="messages-area" id="messages-area">
+    <div class="welcome-screen" id="welcome-screen">
+      <div class="welcome-logo">⚡</div>
+      <h2>Halo! Aku <strong>CludenateF</strong></h2>
+      <p>AI Serba Bisa — Coding, Pelajaran, Analisis Foto/Video/File, dan lebih banyak lagi!</p>
+      <div class="quick-topics">
+        <button onclick="sendQuick('Bantu aku coding JavaScript')">💻 Coding JS</button>
+        <button onclick="sendQuick('Bantu aku belajar Python')">🐍 Python</button>
+        <button onclick="sendQuick('Bantu aku belajar matematika')">📐 Matematika</button>
+        <button onclick="sendQuick('Jelaskan tentang sejarah Indonesia')">📚 Sejarah</button>
+        <button onclick="sendQuick('Aku mau curhat')">💬 Curhat</button>
+        <button onclick="sendQuick('Bantu aku belajar bahasa Inggris')">🌍 Bahasa Inggris</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILE PREVIEW -->
+  <div class="file-preview-area" id="file-preview-area" style="display:none"></div>
+
+  <!-- INPUT AREA -->
+  <div class="input-area">
+    <div class="input-toolbar">
+      <label class="attach-btn" title="Kirim Foto/File">
+        📎
+        <input type="file" id="file-input" multiple accept="image/*,video/*,.pdf,.txt,.js,.py,.html,.css,.json,.zip" onchange="handleFileSelect(event)" style="display:none">
+      </label>
+      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Voice Chat">🎤</button>
+    </div>
+    <div class="input-wrapper">
+      <textarea id="msg-input" placeholder="Ketik pesan... (Shift+Enter = baris baru)" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    </div>
+    <button class="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay hidden" id="settings-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>⚙️ Pengaturan</h3>
+      <button onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-item">
+        <label>Tema</label>
+        <select onchange="changeTheme(this.value)" id="theme-select">
+          <option value="dark">Gelap</option>
+          <option value="light">Terang</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <label>Suara Balasan AI</label>
+        <input type="checkbox" id="voice-reply-toggle" onchange="toggleVoiceReply(this.checked)">
+      </div>
+      <div class="setting-item" style="margin-top:20px">
+        <button class="btn-danger" onclick="clearAllChats()">🗑️ Hapus Semua Chat</button>
+      </div>
+      <div class="setting-item">
+        <button class="btn-danger" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OWNER TOOLS MODAL -->
+<div class="modal-overlay hidden" id="owner-modal">
+  <div class="modal owner-modal">
+    <div class="modal-header" style="background:linear-gradient(135deg,#ff4500,#ff8c00)">
+      <h3>🛡️ Owner Tools – Panel Admin</h3>
+      <button onclick="closeOwnerModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="owner-tabs">
+        <button class="otab active" onclick="ownerTab('users')">👥 Pengguna</button>
+        <button class="otab" onclick="ownerTab('kick')">🦵 Kick</button>
+        <button class="otab" onclick="ownerTab('permban')">🚫 Perm Ban</button>
+      </div>
+      <!-- Users Tab -->
+      <div id="otab-users" class="otab-content">
+        <h4>📋 Riwayat Pengguna</h4>
+        <div id="users-list" class="users-list"></div>
+      </div>
+      <!-- Kick Tab -->
+      <div id="otab-kick" class="otab-content hidden">
+        <h4>🦵 Kick Pengguna</h4>
+        <p class="hint-text">Ketik di chat: <code>/ownertolls kick &lt;username&gt; &lt;password&gt;</code></p>
+        <div style="margin-top:10px">
+          <input type="text" id="kick-username" placeholder="Username yang mau di-kick">
+          <button class="btn-warning" style="margin-top:8px;width:100%" onclick="kickUser()">🦵 Kick Sekarang</button>
+        </div>
+        <div id="kicked-list" style="margin-top:15px"></div>
+      </div>
+      <!-- Perm Ban Tab -->
+      <div id="otab-permban" class="otab-content hidden">
+        <h4>🚫 Permanent Ban</h4>
+        <p class="hint-text">Ketik di chat: <code>/ownertolls permban &lt;username&gt; &lt;password&gt;</code></p>
+        <div style="margin-top:10px">
+          <input type="text" id="ban-username" placeholder="Username yang mau di-ban permanen">
+          <button class="btn-danger" style="margin-top:8px;width:100%" onclick="permBanUser()">🚫 Ban Permanen</button>
+        </div>
+        <div id="banned-list" style="margin-top:15px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/owner.js"></script>
+<script src="js/voice.js"></script>
+</body>
+  </html>
